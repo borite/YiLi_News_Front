@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<script src="js/jquery-3.3.1.min.js"></script>
+		<link href="css/common.css" rel="stylesheet" />
+		<title>这里是新闻标题</title>
+	</head>
+
+	<body>
+		
+		<div id="news_list">
+			
+			<a class="list-item">
+			  <div class="news-info">
+				<h3 class="news-title">
+					这里是新闻标题吗，哈哈上的垃圾分类看似简单弗兰克  
+				</h3>
+				<div class="footer">
+				    <span>来源：人民日报</span>
+				    <span style="padding-left: 1rem;">浏览量：1000</span>
+				</div>
+			  </div>
+			  <img class="news-pic" src="images/demo.jfif" />
+			</a>
+
+			<a class="list-item">
+			  <div class="news-info">
+				<h3 class="news-title">
+					这里是新闻标题吗，哈哈上的垃圾分类看似简单弗兰克  
+				</h3>
+				<div class="footer">
+				    <span>来源：人民日报</span>
+				    <span style="padding-left: 1rem;">浏览量：1000</span>
+				</div>
+			  </div>
+			  <img class="news-pic" src="images/demo.jfif" />
+			</a>			
+			
+			<a class="list-item">
+			  <div class="news-info">
+				<h3 class="news-title">
+					这里是新闻标题吗，哈哈上的垃圾分类看似简单弗兰克  
+				</h3>
+				<div class="footer">
+				    <span>来源：人民日报</span>
+				    <span style="padding-left: 1rem;">浏览量：1000</span>
+				</div>
+			  </div>
+			  <img class="news-pic" src="images/demo.jfif" />
+			</a>			
+		</div>
+		
+		<button id="btn_load_news">加载更多新闻</button>
+		
+		<script>
+			$("#news_list > a").on('touchend',function(e){
+				e.preventDefault();
+				e.stopPropagation();
+				location.replace('news.html');
+			})
+		
+		</script>
+		
+		
+	</body>
+</html>
