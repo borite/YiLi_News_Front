@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>新闻管理中心</title>
+		<link rel="stylesheet" href="css/bootstrap.min.css" />
+		<style>
+			
+			
+			
+			#wrap,#list{
+				width: 1200px;
+				margin: 50px auto 0;
+			}
+			
+			#list tbody img{
+				display: block;
+				width: 80px;
+				height: auto;
+			}
+			
+			#list tbody{
+				font-size: 14px;
+			}
+			
+			#list tbody td{
+				vertical-align: middle;
+			}
+			
+			#list tbody button{
+				font-size: 12px;
+			}
+			
+			#list a.btn{
+				font-size: 14px;
+				border:  1px solid #007bff;
+				box-sizing: content-box;
+				padding: 4px 10px;
+			}
+			
+			
+			.op{
+				display: flex;
+				justify-content: space-between;
+			}
+			
+		</style>
+	</head>
+
+	<body>
+		<div id="wrap">
+			<header class="d-flex justify-content-between align-items-center">
+				<h3>新闻管理中心</h3>
+				<a href="add_news.html" class="btn btn-primary text-white">添加新闻</a>
+			</header>
+		</div>
+		<hr/>	
+		<div id="list">
+			
+			<div class="d-flex align-items-center pb-4">
+				<a href="#" class="btn btn-primary btn-sm mr-3">全部</a>
+				<a href="#" class="btn btn-outline-primary btn-sm mr-3">分类一</a>
+				<a href="#" class="btn btn-outline-primary btn-sm">分类二</a>
+			</div>
+			
+			
+			<table class="table table-hover">
+		      <caption>共有&nbsp;1&nbsp;条新闻</caption>
+			  <thead class="thead-light">
+				<tr>
+				  <th style="width: 40px;">#</th>
+				  <th style="width: 10px;">封面图</th>
+				  <th style="width: 400px;">新闻标题</th>
+				  <th style="width: 110px;">新闻分类</th>
+				  <th style="width: 120px;">作者</th>
+				  <th style="width: 120px;">发布时间</th>
+				  <th style="width: 100px;">状态</th>
+				  <th>操作</th>
+				</tr>
+			  </thead>
+			  <tbody>
+				 <tr>
+					  <th scope="row">1</th>
+					  <td>
+						 <img src="images/indemo2.jfif" alt="">
+					  </td>
+					  <td>这里是一个标题,这里是一个标题,这里是一个表多斯拉克交罚款了数据库螺丝刀交罚款了圣诞节法律框架来看</td>
+					  <td>分类一</td>
+					  <td>人民日报</td>
+					  <td>2020-3-1 14:39:45</td>
+					  <td>展示中</td>
+					  <td class="op">
+						<button class="btn btn-small btn-danger">删除</button>
+						<button class="btn btn-small btn-warning">下线</button>
+						<button class="btn btn-small btn-primary">编辑</button>
+					  </td>
+				 </tr>
+				 <tr>
+					  <th scope="row">2</th>
+					  <td>
+						 <img src="images/indemo2.jfif" alt="">
+					  </td>
+					  <td>这里是一个标题,这里是一个标题,这里是一个表多斯拉克交罚款了数据库螺丝刀交罚款了圣诞节法律框架来看</td>
+					  <td>分类一</td>
+					  <td>人民日报</td>
+					  <td>2020-3-1 14:39:45</td>
+					  <td>展示中</td>
+					  <td class="op">
+						<button class="btn btn-small btn-danger">删除</button>
+						<button class="btn btn-small btn-warning">下线</button>
+						<button class="btn btn-small btn-primary">编辑</button>
+					  </td>
+				 </tr>
+			  </tbody>
+			</table>
+		
+		</div>
+		
+		
+		
+	</body>
+</html>

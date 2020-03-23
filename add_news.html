@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>添加新闻</title>
+		<link rel="stylesheet" href="css/bootstrap.min.css" />
+		<style>
+			#wrap{
+				width: 1200px;
+				margin: 50px auto 25px;
+			}
+			
+			#edit{
+				width: 980px;
+				margin: 25px auto;
+			}
+			
+			#type_list{
+				display: flex;
+				
+				font-size: 14px;
+			}
+			
+			#type_list a.type {
+				display: block;
+				border:1px solid #007bff;
+				padding: 3px 8px;
+				border-radius: 4px;
+				font-size: 14px;
+				margin-right: 10px;
+			}
+			
+			
+			#type_list a.type:hover {
+				background-color: #007bff;
+				color: #fff;
+			}
+			
+			#type_list a.type.active {
+				background-color: #007bff;
+				color: #fff;
+			}
+			
+			.form-control{
+				font-size: 14px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="wrap">
+			<header class="d-flex align-items-center">
+				<a href="news_list.html">
+					<img src="images/btn_back.png" width="40"/>
+				</a>
+				<h3 class="mb-0 ml-2">添加新闻</h3>
+			</header>
+		</div>
+		<hr/>	
+		
+		<section id="edit">
+			<form>
+			  <div class="form-group">
+				<label for="news_title">新闻标题</label>
+				<input type="text" class="form-control" id="news_title" placeholder="请输入新闻标题，最少2个字">
+				<small id="newsTitHelp" class="form-text text-muted" style="min-height: 20px;"></small>
+			  </div>
+			  <div class="form-group">
+				<label for="news_author">作者</label>
+				<input type="text" class="form-control" id="news_author" placeholder="请输入新闻标题，最少2个字">
+				<small id="newsAuthHelp" class="form-text text-muted" style="min-height: 20px;"></small>
+			  </div>
+			  <div class="form-group">
+				 <label for="news_author">新闻分类</label>
+				 <div id="type_list" class="mt-2">
+				    <a class="type active">分类一</a>
+					<a class="type">分类二</a>
+					<a class="type">分类三</a>
+					<a class="type">分类四</a>
+				 </div>  
+				 <button id="btn_add_type" class="btn mt-3 btn-warning" style=" font-size: 14px; color: #212529;">十 添加一个分类</button>
+			  </div>
+			  <div class="form-group">
+				 <label for="news_author">新闻封面</label>
+				 <button id="btn_add_type" class="btn mt-3 btn-warning" style=" font-size: 14px; color: #212529;">十 添加一个封面</button>  
+			  </div>
+				
+			  <div class="form-group">
+				 <label>新闻内容</label>
+				 <div id="editor"></div>
+			  </div>
+
+				
+
+			  <button type="submit" class="btn btn-primary">提交</button>
+			</form>
+			
+		</section>
+		<script src="editor/wangEditor.js"></script>
+		<script>
+			var E = window.wangEditor
+			var editor = new E('#editor')
+			// 或者 var editor = new E( document.getElementById('editor') )
+			editor.create()
+		</script>
+	</body>
+</html>
