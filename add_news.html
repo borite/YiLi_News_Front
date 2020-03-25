@@ -11,16 +11,31 @@
 		<script src="js/cropper.min.js"></script>
 		<script>
 			$(function(){
-				getNewsType();
-				
+				getNewsType();			
 				$("#type_list").on('click','a.type',function(){
 					$("#type_list a.type").removeClass('active');
 					$(this).addClass('active');
 				});
 				
-				
-				
-			})
+				$("#type_list").on('click','img.btn-del',function(e){
+					e.stopPropagation();
+					if(confirm('删除后，该分类下的所有新闻将被删除且不可恢复，确认删除吗？')){
+						var id=$(this).data('tid');
+						
+						$.ajax("https://customer.imotstudio.net/YLNewsInfo/DeleteNewsType?typeID="+id,{
+							type:'delete',
+							success:function(res){
+								if(res.Code==200){
+									getNewsType();
+								}else{
+									alert(res.Message);
+								}	
+							}
+						})
+					
+					}
+				})
+			});
 		</script>
 		<style>
 			#wrap{
@@ -29,7 +44,7 @@
 			}
 			
 			#edit{
-				width: 980px;
+				width: 800px;
 				margin: 25px auto;
 			}
 			
@@ -89,6 +104,20 @@
 			.error{
 				border-color: #F32125;
 			}
+			
+			.toolbar {
+            	border: 1px solid #ccc;
+       		 }
+			.text {
+				border: 1px solid #ccc;
+				height: 800px;
+			}
+			.form-group{
+				margin-bottom: 30px;
+			}
+			.form-group label{
+				margin-bottom: 15px;
+			}
 
 		</style>
 	</head>
@@ -135,7 +164,13 @@
 				
 			  <div class="form-group">
 				 <label>新闻内容</label>
-				 <div id="editor"></div>
+				 <div id="toolbar" class="toolbar"></div>
+				 <div style="padding: 8px 0; color: #ccc; font-size: 14px;">
+				 	新闻内容中，图片每张不得超过3MB
+				 </div>
+				 <div id="editor" class="text">
+				  	
+				 </div>
 				 <input id="news_content_val" type="hidden" value="-1">
 			  </div>
 				
@@ -178,20 +213,51 @@
 			</div>
 		</div>
 
-
-		<div id="aaa" style="width: 300px; word-wrap: break-word"></div>
 		
 		<script src="editor/wangEditor.js"></script>
+		<script src="js/ossUploadHelper.js"></script>
 		<script>
 			var E = window.wangEditor
-			var editor = new E('#editor')
+			var editor = new E('#toolbar','#editor');
 			// 或者 var editor = new E( document.getElementById('editor') )
+			editor.customConfig.uploadImgMaxSize = 3 * 1024 * 1024; //图片最大2MB
+			editor.customConfig.uploadImgMaxLength = 1; //一次最多上传10张图片
+			
+			//自定义图片上传
+			editor.customConfig.customUploadImg = function(files,insert){  
+				var OssSign=get_signature()
+				var imgUrl="";
+				if(OssSign==true){	
+					var formData = new FormData();
+					formData.append("policy",policyBase64);
+					formData.append("OSSAccessKeyId",accessid);
+					formData.append("success_action_status",'200');
+					formData.append("signature",signature);
+					files.forEach(function(cf){
+						var fileName= random_string(10)+get_suffix(cf.name);
+						var g_object_name = key + fileName;
+						formData.append("key",g_object_name);
+						formData.append("file",cf);
+						$.ajax(host,{
+							type:'post',
+    						data: formData,
+							contentType: false,
+    						processData: false,
+							success:function(res){
+							 	imgUrl=host+"/"+g_object_name;
+								insert(imgUrl);
+							}
+						})
+					})
+				}	
+			}
 			editor.create();
+			
 			$("#btn_add_poster").click(function(){
 				$("#news_poster").click();
-				
 			});
 			
+			//添加新闻类型
 			$("#btn_add_type").click(function(e){
 				e.preventDefault();
 				$.showPopLayer({
@@ -207,6 +273,7 @@
 								$("#save_type").prop('disabled',true).text('请稍后...');
 								$.post("https://customer.imotstudio.net/YLNewsInfo/CreatNewsType",{"typeName":type_name}).done(function(res){
 									if(res.Code==200){
+										$("#type_list").empty();
 										$("#type_list").append('<a id="t'+res.Data.ID+'" class="type">\
 																	<span>'+res.Data.tName+'</span>\
 																	<img data-tid="'+res.Data.ID+'" src="images/icon-del.png" class="btn-del" width="18">\
@@ -222,9 +289,11 @@
 							}
 						})
 					}
-				})
-			});
+				 })
+			 });
 			
+			
+			//新闻封面图改变
 			$("#news_poster").change(function(){
 				var size = 2 * 1024 * 1024;
 				var file = this.files[0];
@@ -248,8 +317,19 @@
 					initCropper();
 					//绑定弹出框的确认按钮事件
 					$("#btn_save").one('click',function(){
-						var cas=$("#cropbox").cropper('getCroppedCanvas');
-						var base64url=cas.toDataURL('image/png');
+						var cas=$("#cropbox").cropper('getCroppedCanvas',{
+							  width: 600,
+							  height: 420,
+							  minWidth: 200,
+							  minHeight: 140,
+							  maxWidth: 4096,
+							  maxHeight: 4096,
+							  fillColor: '#fff',
+							  imageSmoothingEnabled: false,
+							  imageSmoothingQuality: 'high',
+						});
+						
+						var base64url=cas.toDataURL();
 						$("#btn_add_poster").attr("src",base64url);
 						$("#news_poster_val").val(base64url);
 						$.closePopLayer();
@@ -267,18 +347,22 @@
 			});
 						
 			$("#btn_post_news").click(function(){
+				
 				//if(checkForm()){
-					var ImgInfoStr=$("#news_poster_val").val();
+				var ImgInfoStr=$("#news_poster_val").val();
 					var allImgs=[];
 					var extName=ImgInfoStr.substr(11,3);
 					var imginfo={baseURL:ImgInfoStr,ext:extName};
 					allImgs.push(imginfo);
 					console.log(allImgs);
 
-					$.post('http://localhost:6681/UpLoadImgBase64',{"imgs":allImgs}).done(function(res){
+					$.post('https://customer.imotstudio.net/YLNewsInfo/UpLoadImgBase64',{"imgs":allImgs}).done(function(res){
 						console.log(res);
+						$("#news_poster_val").val(res.Data);
 					});
 				//}
+				
+				 console.log(editor.txt.html());
 			})
 			
 			function initCropper(){
@@ -331,6 +415,7 @@
 				return true;
 			}
 			
+			//获取新闻类型
 			function getNewsType(){
 				$.ajax('http://customer.imotstudio.net/YLNewsInfo/ReadNewsType',{
 					method:'get',
@@ -341,7 +426,8 @@
 					success:function(res){
 						if(res.Code==200){
 							if(res.Data.length>0){
-								$("#type_list").text('');
+								
+								$("#type_list").empty();
 								$.each(res.Data,function(i,o){
 									$("#type_list").append('<a id="t'+o.ID+'" class="type">\
 											<span>'+o.TypeName+'</span>\
