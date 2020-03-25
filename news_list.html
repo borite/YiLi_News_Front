@@ -4,6 +4,56 @@
 		<meta charset="utf-8">
 		<title>新闻管理中心</title>
 		<link rel="stylesheet" href="css/bootstrap.min.css" />
+		<script src="js/jquery-3.3.1.min.js"></script>
+		
+		<script>
+			$(function(){
+				getNewsList();
+			});
+			function getNewsList(typeID){
+				$.get("https://customer.imotstudio.net/YLNewsInfo/ReadNewsList").done(function(res){
+					if(res.Code==200){
+						$("#list_body").empty();
+						if(res.Data.length>0){
+							res.Data.forEach(function(o,i){
+								var orderNum=i+1;
+								var poster=o.PosterIMG;
+								var typeName=o.NewsType;
+								var title=o.Title;
+								var author=o.Author;
+								var pubTime=o.AddTime;
+								var state=0;
+								var tempItemStr=`<tr>
+									  <th scope="row">${orderNum}</th>
+									  <td>
+										 <img src="${poster}" alt="">
+									  </td>
+									  <td>${title}</td>
+									  <td>${typeName}</td>
+									  <td>${author}</td>
+									  <td>${pubTime}</td>
+									  <td>${state}</td>
+									  <td class="op">
+										<button class="btn btn-small btn-danger">删除</button>
+										<button class="btn btn-small btn-warning">下线</button>
+										<button class="btn btn-small btn-primary">编辑</button>
+									  </td>
+								 </tr>`;
+								$("#list_body").append(tempItemStr);
+							})
+						}else{
+							$("#list_body").append('<tr><td colspan="3">还没有相关新闻</td></tr>');
+						}
+					}else{
+						alert(res.Message);
+					}
+				})
+			}
+		
+		</script>
+		
+		
+		
 		<style>
 			
 			
@@ -78,39 +128,8 @@
 				  <th>操作</th>
 				</tr>
 			  </thead>
-			  <tbody>
-				 <tr>
-					  <th scope="row">1</th>
-					  <td>
-						 <img src="images/indemo2.jfif" alt="">
-					  </td>
-					  <td>这里是一个标题,这里是一个标题,这里是一个表多斯拉克交罚款了数据库螺丝刀交罚款了圣诞节法律框架来看</td>
-					  <td>分类一</td>
-					  <td>人民日报</td>
-					  <td>2020-3-1 14:39:45</td>
-					  <td>展示中</td>
-					  <td class="op">
-						<button class="btn btn-small btn-danger">删除</button>
-						<button class="btn btn-small btn-warning">下线</button>
-						<button class="btn btn-small btn-primary">编辑</button>
-					  </td>
-				 </tr>
-				 <tr>
-					  <th scope="row">2</th>
-					  <td>
-						 <img src="images/indemo2.jfif" alt="">
-					  </td>
-					  <td>这里是一个标题,这里是一个标题,这里是一个表多斯拉克交罚款了数据库螺丝刀交罚款了圣诞节法律框架来看</td>
-					  <td>分类一</td>
-					  <td>人民日报</td>
-					  <td>2020-3-1 14:39:45</td>
-					  <td>展示中</td>
-					  <td class="op">
-						<button class="btn btn-small btn-danger">删除</button>
-						<button class="btn btn-small btn-warning">下线</button>
-						<button class="btn btn-small btn-primary">编辑</button>
-					  </td>
-				 </tr>
+			  <tbody id="list_body">
+
 			  </tbody>
 			</table>
 		

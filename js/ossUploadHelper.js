@@ -28,7 +28,7 @@ function send_request()
     if (xmlhttp!=null)
     {
 		
-        var serverUrl = "http://customer.imotstudio.net/YLNewsInfo/GetDirectUploadSign";
+        var serverUrl = "https://customer.imotstudio.net/YLNewsInfo/GetDirectUploadSign";
         xmlhttp.open("POST", serverUrl, false);
 		xmlhttp.setRequestHeader('content-type', 'application/json');
         xmlhttp.send(null);

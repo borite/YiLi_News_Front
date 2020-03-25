@@ -15,6 +15,9 @@
 				$("#type_list").on('click','a.type',function(){
 					$("#type_list a.type").removeClass('active');
 					$(this).addClass('active');
+					var id=$(this).data('tid');
+					$("#news_type_val").val(id);
+					
 				});
 				
 				$("#type_list").on('click','img.btn-del',function(e){
@@ -110,7 +113,7 @@
        		 }
 			.text {
 				border: 1px solid #ccc;
-				height: 800px;
+				height: 600px;
 			}
 			.form-group{
 				margin-bottom: 30px;
@@ -157,7 +160,7 @@
 			  <div class="form-group">
 				 <label for="news_author">新闻封面</label>
 				 <img id="btn_add_poster" style="display: block; cursor: pointer" width="200" src="images/btn_add.png" alt="点击上传图片" />
-				 <small id="poster_tip" class="form-text text-muted" style="min-height: 20px;">点击可重新上传封面图</small>
+				 <small id="poster_tip" class="form-text text-muted" style="min-height: 20px;">点击可更改封面图</small>
 				 <input id="news_poster" type="file" style="display: none;"/>
 				 <input id="news_poster_val" type="hidden" value="-1" />
 			  </div>
@@ -175,6 +178,8 @@
 			  </div>
 				
 			  <button id="btn_post_news" type="button" class="btn btn-primary" style="width: 120px;">提交</button>
+			  <a href="news_list.html" type="button" target="_self" class="btn btn-light" style="width: 120px;">取消</a>
+				
 			</form>
 			
 		</section>
@@ -207,7 +212,7 @@
 				  <div class="card-body">
 					<h6 class="card-title">分类名字</h6>
 					<input type="text" class="form-control" id="type_name" placeholder="请输入分类名字，最少2个字" />
-					<small class="form-text text-muted pl-2" style="min-height: 20px;">请输入分类名字</small>
+					
 					<button id="save_type" class="btn btn-primary d-block mt-4" style="font-size: 14px; color: #fff; width: 100%;">确认</button>
 				  </div>
 			</div>
@@ -219,6 +224,15 @@
 		<script>
 			var E = window.wangEditor
 			var editor = new E('#toolbar','#editor');
+			
+			editor.customConfig.onchange = function (html) {
+				if(html!="<p><br></p>"){
+					$("#news_content_val").val("0");
+				}else{
+					$("#news_content_val").val("-1");
+				}
+			}
+			
 			// 或者 var editor = new E( document.getElementById('editor') )
 			editor.customConfig.uploadImgMaxSize = 3 * 1024 * 1024; //图片最大2MB
 			editor.customConfig.uploadImgMaxLength = 1; //一次最多上传10张图片
@@ -273,12 +287,7 @@
 								$("#save_type").prop('disabled',true).text('请稍后...');
 								$.post("https://customer.imotstudio.net/YLNewsInfo/CreatNewsType",{"typeName":type_name}).done(function(res){
 									if(res.Code==200){
-										$("#type_list").empty();
-										$("#type_list").append('<a id="t'+res.Data.ID+'" class="type">\
-																	<span>'+res.Data.tName+'</span>\
-																	<img data-tid="'+res.Data.ID+'" src="images/icon-del.png" class="btn-del" width="18">\
-															   </a>');
-										
+										getNewsType();
 									}else{
 										alert(res.Message);
 									}
@@ -342,27 +351,37 @@
 							$('#news_poster').prop('value', '');
 							$('#cropbox').cropper('destroy');
 						}
+						
 					});
 				}
 			});
 						
 			$("#btn_post_news").click(function(){
 				
-				//if(checkForm()){
-				var ImgInfoStr=$("#news_poster_val").val();
-					var allImgs=[];
-					var extName=ImgInfoStr.substr(11,3);
-					var imginfo={baseURL:ImgInfoStr,ext:extName};
-					allImgs.push(imginfo);
-					console.log(allImgs);
-
-					$.post('https://customer.imotstudio.net/YLNewsInfo/UpLoadImgBase64',{"imgs":allImgs}).done(function(res){
-						console.log(res);
-						$("#news_poster_val").val(res.Data);
-					});
-				//}
+				if(checkForm()){
+					var ImgInfoStr=$("#news_poster_val").val();
+						var allImgs=[];
+						var extName=ImgInfoStr.substr(11,3);
+						var imginfo={baseURL:ImgInfoStr,ext:extName};
+						allImgs.push(imginfo);
+						$.post('https://customer.imotstudio.net/YLNewsInfo/UpLoadImgBase64',{"imgs":allImgs}).then(function(res){
+							console.log(res);
+							$("#news_poster_val").val(res.Data);
+							
+							var newsPara={
+							  "NewsType": $("#news_type_val").val(),
+							  "Title": $("#news_title").val(),
+							  "PosterIMG": $("#news_poster_val").val(),
+							  "Author": $("#news_author").val(),
+							  "NewsContent": editor.txt.html(),
+							  "NewsText":editor.txt.text()
+							}
+							return $.post("https://customer.imotstudio.net/YLNewsInfo/CreatNews",newsPara);
+						}).done(function(res){
+							console.log(res);
+						});
+				}			
 				
-				 console.log(editor.txt.html());
 			})
 			
 			function initCropper(){
@@ -408,7 +427,7 @@
 					return false;
 				}
 				
-				if(news_conent=="-1"){
+				if(news_content=="-1"){
 					alert("请填写新闻内容");
 					return false;
 				}
@@ -417,7 +436,7 @@
 			
 			//获取新闻类型
 			function getNewsType(){
-				$.ajax('http://customer.imotstudio.net/YLNewsInfo/ReadNewsType',{
+				$.ajax('https://customer.imotstudio.net/YLNewsInfo/ReadNewsType',{
 					method:'get',
 					cache:false,
 					beforeSend:function(){
@@ -426,15 +445,13 @@
 					success:function(res){
 						if(res.Code==200){
 							if(res.Data.length>0){
-								
 								$("#type_list").empty();
 								$.each(res.Data,function(i,o){
-									$("#type_list").append('<a id="t'+o.ID+'" class="type">\
+									$("#type_list").append('<a id="t'+o.ID+'" data-tid="'+o.ID+'" class="type">\
 											<span>'+o.TypeName+'</span>\
 											<img data-tid="'+o.ID+'" src="images/icon-del.png" class="btn-del" width="18">\
 									</a>');
 								})
-								
 							}else{
 								$("#type_list").text('您还没有新闻分类，请添加');
 							}
