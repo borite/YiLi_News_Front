@@ -5,64 +5,102 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<script src="js/jquery-3.3.1.min.js"></script>
 		<link href="css/common.css" rel="stylesheet" />
+		<script>
+			
+			var tid=0;
+			var nid=0;
+			var nextid=0;
+			var next_tit=0;
+			$(function(){
+				tid=GetQueryString('typeid');
+				nid=GetQueryString('nid');
+				nextid=GetQueryString('next');
+				next_tit=GetQueryString('ntit');
+				console.log(tid,nid);
+				if(tid==0||nid==0){
+					alert('参数错误');
+				}else{
+					console.log("aa");
+					console.log(decodeURIComponent(next_tit));
+					$("#next_title").text(decodeURIComponent(next_tit));
+					$("#h_back,#btn_back").on('touchend',function(e){
+						e.preventDefault();
+						e.stopPropagation();
+						location.replace('index.html?t='+tid);
+					});
+					$("#btn_next").on('touchend',function(e){
+						e.preventDefault();
+						e.stopPropagation();				
+						location.replace('news.html?typeid='+tid+'&nid='+nid+'&next='+nextid+'&ntit='+next_tit);
+					});
+					getNewsDetails(nid);
+				}
+			});
+			
+	
+			function getNewsDetails(new_id){
+				$.get("https://customer.imotstudio.net/YLNewsInfo/ReadNewsInfo?ID="+new_id).done(function(res){
+					console.log(res);
+					if(res.Code==200){
+						document.title=res.Data.Title;
+						$("#view_num").text('浏览：'+res.Data.ReadNum);
+						$("#new_tit").text(res.Data.Title);
+						$("#author").text(res.Data.Author);
+						$("#pub_time").text(formatTime(res.Data.AddTime));
+						$("#news_content").html(res.Data.NewsContent);
+					}
+				});
+			}
+	
+			//获取URL中指定的参数值
+			function GetQueryString(name) { 
+			  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+			  var r = window.location.search.substr(1).match(reg); //获取url中"?"符后的字符串并正则匹配
+			  var context = ""; 
+			  if (r != null) 
+				 context = r[2]; 
+			  reg = null; 
+			  r = null; 
+			  return context == null || context == "" || context == "undefined" ? "" : context; 
+			}
+			//格式化时间
+			function formatTime(theTime){
+				var f=theTime.replace('T',' ');
+				f=f.substring(0,f.lastIndexOf('.'));
+				return f;
+			}
+		
+		</script>
 		<title>这里是新闻标题</title>
 	</head>
 
-	<body>
-		
+	<body style="padding-top: 10px;">
 		<div id="top_back">
-			<div style="display: flex; align-items: center;">
+			<div id="h_back" style="display: flex; align-items: center;">
 		  		<img src="images/btn_back.png"/>
 				<span style="color: #8A8A8A; font-size: 14px">返回</span>
 			</div>
-		    
-		    <span style="color: #8A8A8A; font-size: 12px;">浏览：120</span>
+		    <span id="view_num" style="color: #8A8A8A; font-size: 12px;">浏览：0</span>
 		</div>
 		
 		
 		<header id="in_header">
-			<h1 class="in-tit">入境旅客出现症状是就地治疗，还是遣送回来源国？回应来了</h1>
+			<h1 id="new_tit" class="in-tit"></h1>
 			<div class="in-info">
-				<div class="author">
-					人民网
-				</div>
-				<div class="h-info">
-					2020-2-16 11:30
-				</div>
+				<div id="author" class="author"></div>
+				<div id="pub_time" class="h-info"></div>
 			</div>
 		</header>
 		
 		<section id="news_content">
-		  <p>16日，国务院联防联控机制召开新闻发布会，介绍依法防控境外疫情输入有关情况。</p>
-		  <p class="img-wrap">
-			<img src="images/indemo2.jfif" alt="">
-		  </p>
-		  <p>
-			  <strong>国家卫健委新闻发言人米锋：外防输入已经成为目前疫情防控的重中之重。</strong>
-			  据世界卫生组织通报，截至北京时间15日17时，已有143个国家和地区报告病例。
-			  <strong>鉴于这种情况，专家目前不建议出境旅游。</strong>
-		  </p>
+		  	
 			
-		  <p class="video-wrap">
-		 	 <video src="https://blz-videos.nosdn.127.net/1/World%20of%20Warcraft/wx8b.mp4" controls></video>
-			
-		  </p>
-		
 		</section>
 		
 		<div id="btn_areas">
 		   <button id="btn_back">返回列表</button>
-		   <button id="btn_next">下一条：这里是新闻标题艰苦拉萨大家</button>
+		   <button id="btn_next">下一条：<a id="next_title">这里是新闻标题艰苦拉萨大家</a></button>
 		</div>
-		
-		<script>
-			$("#top_back,#btn_back").on('touchend',function(e){
-				e.preventDefault();
-				e.stopPropagation();
-				location.replace('index.html');
-			})
-		 
-		</script>
-		
+			
 	</body>
 </html>

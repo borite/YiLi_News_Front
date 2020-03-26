@@ -95,7 +95,7 @@ body{
 #in_header .in-info {
 	margin-top: 1rem;
 	display: flex;
-	align-items:flex-end;
+	align-items:center;
 }
 
 #in_header .h-info {

@@ -5,11 +5,13 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<script src="js/jquery-3.3.1.min.js"></script>
 		<link href="css/common.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/bootstrap.min.css">
 		<title>这里是新闻标题</title>
 		<script>
 			
 			var typeid=0;
 			var page_index=1;
+			var page_size=5;
 			$(function(){
 				typeid=GetQueryString('t');
 				console.log(typeid);
@@ -19,8 +21,18 @@
 				if(typeid==0){
 					alert("参数错误");
 				}else{
-					getNewsList(typeid,page_index,10);
+					getNewsList(typeid,page_index,page_size);
 				}
+				
+				$("#news_list").on('click','a',function(e){
+					e.preventDefault();
+					e.stopPropagation();
+					let newid=$(this).data('nid');
+					let next=$(this).next().data('nid');
+					let nexttit=$(this).next().find('.news-title').text();
+					nexttit=encodeURIComponent(nexttit);
+					location.replace('news.html?typeid='+typeid+'&nid='+newid+'&next='+next+'&ntit='+nexttit);
+				})
 			});
 			
 			
@@ -37,118 +49,67 @@
 			}
 			
 			
-			function getNewsList(typeID,pIndex,pSize){
+			function getNewsList(typeID,pIndex,pSize,isFirst=true){
 				$.get("https://customer.imotstudio.net/YLNewsInfo/ReadNewsList",{NewsTypeID:typeID,pageIndex:pIndex,pageSize:pSize}).done(function(res){
 					if(res.Code==200){
-						$("#list_body").empty();
-						total_news=res.Data.TotalCount;
-						console.log(total_news);
-						total_page= total_news % pSize>0?Math.floor(total_news/pSize)+1:total_news/pSize;
-						console.log(total_page);
-					}
-/*						//计算总页数，根据页容量和总记录数
+						//如果是第一次加载，则清空一下列表内容，为保险起见
+						if(isFirst){
+							$("#news_list").empty();
+						}
 						
-						$("#total_count").text(total_news);
-						//设置分页
-						$("#pagination").whjPaging("setPage", {currPage: pIndex, totalPage: total_page, totalSize: total_news});
-						var _news=res.Data.news;
-						if(_news.length>0){
-							console.log(_news);
-							_news.forEach(function(o,i){
-								var orderNum=pIndex==1?0*page_size+i+1:(pIndex-1)*page_size+i+1;
-								var poster=o.PosterIMG;
-								var typeName=o.newTypeName;
-								var title=o.Title;
-								var author=o.Author;
-								var pubTime= formatTime(o.AddTime);
-								var state=0;
-								var viewNum=o.ReadNum;
-								var tempItemStr=`<tr>
-													  <td style="font-weight:bold;">${orderNum}</td>
-													  <td>
-														 <img src="${poster}" alt="">
-													  </td>
-													  <td>${title}</td>
-													  <td>${typeName}</td>
-													  <td>${author}</td>
-													  <td>${pubTime}</td>
-													  <td style="text-align: center"s>${viewNum}</td>
-													  <td class="op">
-														<button class="d-block btn btn-small btn-info" onclick="preview(${o.ID})">预览</button>
-														<button class="btn btn-small btn-danger" onclick="delNews(${o.ID})">删除</button>
-														<button class="btn btn-small btn-primary">编辑</button>
-													  </td>
-												 </tr>`;
-								$("#list_body").append(tempItemStr);		
-							});
+						total_news=res.Data.TotalCount;
+						
+						if(total_news==0){
+							$("#news_list").append('<a>还没任何新闻</a>');
 						}else{
-							$("#list_body").append('<tr><td colspan="3">还没有相关新闻</td></tr>');
+						    let total_page= total_news % pSize>0?Math.floor(total_news/pSize)+1:total_news/pSize;
+							if(page_index>=total_page){
+								$("#btn_load_news").prop('disabled',true).text('没有更多了');
+							}
+							
+							let _news=res.Data.news;
+							let typeName=_news[0].newTypeName;
+							$("#top_bar").text(typeName);
+							_news.forEach((o,i)=>{
+								let title=o.Title;
+								let author=o.Author;
+								let viewnum=o.ReadNum;
+								let poster=o.PosterIMG;
+								let nid=o.ID;
+								let htmlStr=`<a class="list-item" data-nid=${nid}>
+										  <div class="news-info">
+											<h3 class="news-title">${title}</h3>
+											<div class="footer">
+												<span>来源：${author}</span>
+												<span style="padding-left: 1rem;">浏览量：${viewnum}</span>
+											</div>
+										  </div>
+										  <img class="news-pic" src="${poster}" />
+									</a>`;
+								$("#news_list").append(htmlStr);
+							});
 						}
 					}else{
 						alert(res.Message);
-					}*/
+					}
 				})
 			}
 			
-		
-		
+			function addMoreNews(){
+				page_index++;
+				getNewsList(typeid,page_index,page_size,false);
+			}
+			
 		</script>
 	</head>
 
 	<body>	
-		<header id="top_bar">新闻频道</header>
+		<header id="top_bar"></header>
 		<div id="news_list">	
-			<a class="list-item">
-			  <div class="news-info">
-				<h3 class="news-title">
-					这里是新闻标题吗，哈哈上的垃圾分类看似简单弗兰克  
-				</h3>
-				<div class="footer">
-				    <span>来源：人民日报</span>
-				    <span style="padding-left: 1rem;">浏览量：1000</span>
-				</div>
-			  </div>
-			  <img class="news-pic" src="images/demo.jfif" />
-			</a>
-
-			<a class="list-item">
-			  <div class="news-info">
-				<h3 class="news-title">
-					这里是新闻标题吗，哈哈上的垃圾分类看似简单弗兰克  
-				</h3>
-				<div class="footer">
-				    <span>来源：人民日报</span>
-				    <span style="padding-left: 1rem;">浏览量：1000</span>
-				</div>
-			  </div>
-			  <img class="news-pic" src="images/demo.jfif" />
-			</a>			
 			
-			<a class="list-item">
-			  <div class="news-info">
-				<h3 class="news-title">
-					这里是新闻标题吗，哈哈上的垃圾分类看似简单弗兰克  
-				</h3>
-				<div class="footer">
-				    <span>来源：人民日报</span>
-				    <span style="padding-left: 1rem;">浏览量：1000</span>
-				</div>
-			  </div>
-			  <img class="news-pic" src="images/demo.jfif" />
-			</a>			
 		</div>
 		
-		<button id="btn_load_news">加载更多新闻</button>
-		
-		<script>
-			$("#news_list > a").on('touchend',function(e){
-				e.preventDefault();
-				e.stopPropagation();
-				location.replace('news.html');
-			})
-		
-		</script>
-		
-		
+		<button id="btn_load_news" class="btn btn-primary" onClick="addMoreNews()">加载更多新闻</button>
+			
 	</body>
 </html>
