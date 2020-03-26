@@ -6,6 +6,93 @@
 		<script src="js/jquery-3.3.1.min.js"></script>
 		<link href="css/common.css" rel="stylesheet" />
 		<title>这里是新闻标题</title>
+		<script>
+			
+			var typeid=0;
+			var page_index=1;
+			$(function(){
+				typeid=GetQueryString('t');
+				console.log(typeid);
+				if(typeid==''){
+					typeid=0;
+				}	
+				if(typeid==0){
+					alert("参数错误");
+				}else{
+					getNewsList(typeid,page_index,10);
+				}
+			});
+			
+			
+			//获取URL中指定的参数值
+			function GetQueryString(name) { 
+			  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+			  var r = window.location.search.substr(1).match(reg); //获取url中"?"符后的字符串并正则匹配
+			  var context = ""; 
+			  if (r != null) 
+				 context = r[2]; 
+			  reg = null; 
+			  r = null; 
+			  return context == null || context == "" || context == "undefined" ? "" : context; 
+			}
+			
+			
+			function getNewsList(typeID,pIndex,pSize){
+				$.get("https://customer.imotstudio.net/YLNewsInfo/ReadNewsList",{NewsTypeID:typeID,pageIndex:pIndex,pageSize:pSize}).done(function(res){
+					if(res.Code==200){
+						$("#list_body").empty();
+						total_news=res.Data.TotalCount;
+						console.log(total_news);
+						total_page= total_news % pSize>0?Math.floor(total_news/pSize)+1:total_news/pSize;
+						console.log(total_page);
+					}
+/*						//计算总页数，根据页容量和总记录数
+						
+						$("#total_count").text(total_news);
+						//设置分页
+						$("#pagination").whjPaging("setPage", {currPage: pIndex, totalPage: total_page, totalSize: total_news});
+						var _news=res.Data.news;
+						if(_news.length>0){
+							console.log(_news);
+							_news.forEach(function(o,i){
+								var orderNum=pIndex==1?0*page_size+i+1:(pIndex-1)*page_size+i+1;
+								var poster=o.PosterIMG;
+								var typeName=o.newTypeName;
+								var title=o.Title;
+								var author=o.Author;
+								var pubTime= formatTime(o.AddTime);
+								var state=0;
+								var viewNum=o.ReadNum;
+								var tempItemStr=`<tr>
+													  <td style="font-weight:bold;">${orderNum}</td>
+													  <td>
+														 <img src="${poster}" alt="">
+													  </td>
+													  <td>${title}</td>
+													  <td>${typeName}</td>
+													  <td>${author}</td>
+													  <td>${pubTime}</td>
+													  <td style="text-align: center"s>${viewNum}</td>
+													  <td class="op">
+														<button class="d-block btn btn-small btn-info" onclick="preview(${o.ID})">预览</button>
+														<button class="btn btn-small btn-danger" onclick="delNews(${o.ID})">删除</button>
+														<button class="btn btn-small btn-primary">编辑</button>
+													  </td>
+												 </tr>`;
+								$("#list_body").append(tempItemStr);		
+							});
+						}else{
+							$("#list_body").append('<tr><td colspan="3">还没有相关新闻</td></tr>');
+						}
+					}else{
+						alert(res.Message);
+					}*/
+				})
+			}
+			
+		
+		
+		</script>
 	</head>
 
 	<body>	

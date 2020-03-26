@@ -116,12 +116,21 @@
 				height: 600px;
 			}
 			.form-group{
-				margin-bottom: 30px;
+				margin-bottom: 10px;
 			}
 			.form-group label{
 				margin-bottom: 15px;
 			}
-
+			
+			#bottom{
+			    height: 100px;
+				text-align: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				border-top: 1px solid #ccc;
+				margin-top: 100px;
+			}
 		</style>
 	</head>
 
@@ -165,20 +174,18 @@
 				 <input id="news_poster_val" type="hidden" value="-1" />
 			  </div>
 				
-			  <div class="form-group">
+			  <div class="form-group" style="margin-bottom: 50px;">
 				 <label>新闻内容</label>
 				 <div id="toolbar" class="toolbar"></div>
 				 <div style="padding: 8px 0; color: #ccc; font-size: 14px;">
 				 	新闻内容中，图片每张不得超过3MB
 				 </div>
-				 <div id="editor" class="text">
-				  	
-				 </div>
+				 <div id="editor" class="text"></div>
 				 <input id="news_content_val" type="hidden" value="-1">
 			  </div>
 				
 			  <button id="btn_post_news" type="button" class="btn btn-primary" style="width: 120px;">提交</button>
-			  <a href="news_list.html" type="button" target="_self" class="btn btn-light" style="width: 120px;">取消</a>
+			  <a href="news_list.html" type="button" target="_self" class="btn btn-light" style="width: 120px; margin-left: 30px;">取消</a>
 				
 			</form>
 			
@@ -218,6 +225,11 @@
 			</div>
 		</div>
 
+
+		<footer id="bottom">
+			<span>上海光本文化传媒有限责任公司提供技术支持@2020</span>
+		</footer>
+		
 		
 		<script src="editor/wangEditor.js"></script>
 		<script src="js/ossUploadHelper.js"></script>
@@ -357,9 +369,9 @@
 			});
 						
 			$("#btn_post_news").click(function(){
-				
 				if(checkForm()){
-					var ImgInfoStr=$("#news_poster_val").val();
+						$("#btn_post_news").prop('disabled',true).text('请稍后..');
+						var ImgInfoStr=$("#news_poster_val").val();
 						var allImgs=[];
 						var extName=ImgInfoStr.substr(11,3);
 						var imginfo={baseURL:ImgInfoStr,ext:extName};
@@ -378,11 +390,21 @@
 							}
 							return $.post("https://customer.imotstudio.net/YLNewsInfo/CreatNews",newsPara);
 						}).done(function(res){
-							console.log(res);
+							if(res.Code==200){
+								$("#btn_post_news").prop('disabled',false).text('提交');
+								alert("发布新闻成功！");
+								location.replace('news_list.html');
+							}else{
+								alert(res.Message);
+							}
+						}).always(function(){
+							$("#btn_post_news").prop('disabled',false).text('提交');
 						});
 				}			
 				
-			})
+			});
+			
+			
 			
 			function initCropper(){
 				$("#cropbox").cropper({

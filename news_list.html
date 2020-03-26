@@ -4,43 +4,105 @@
 		<meta charset="utf-8">
 		<title>新闻管理中心</title>
 		<link rel="stylesheet" href="css/bootstrap.min.css" />
+		<link rel="stylesheet" href="css/pagination.css" />
 		<script src="js/jquery-3.3.1.min.js"></script>
-		
+		<script src="js/pagination.min.18.js"></script>
 		<script>
+			var total_news=0;
+			var page_index=1;
+			var page_size=10;
+			var total_page=0;
+			var type_id=0;
 			$(function(){
-				getNewsList();
+				type_id=GetQueryString("newstype");
+				if(type_id==""){
+					type_id=0;
+				}
+				//初始化分页
+				$("#pagination").whjPaging({
+					css: 'css-1',
+					isResetPage:true,
+					showPageNum: 8,
+					previousPage: '上一页',
+					nextPage: '下一页',
+					isShowFL: true,
+					isShowPageSizeOpt: false,
+					isShowSkip: false,
+					isShowRefresh: false,
+					isShowTotalPage: false,
+					isShowTotalSize: false,
+					isShowSkip: true,
+					callBack: function (currPage, pageSize) {	
+						page_index=currPage;
+						getNewsList(type_id,currPage,page_size);
+						console.log('currPage:' + currPage + '     pageSize:' + total_page);
+					}
+				});
+				getNewsType();
+				getNewsList(type_id,page_index,page_size);
+				
 			});
-			function getNewsList(typeID){
-				$.get("https://customer.imotstudio.net/YLNewsInfo/ReadNewsList").done(function(res){
+			
+			//获取URL中指定的参数值
+			function GetQueryString(name) { 
+			  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+			  var r = window.location.search.substr(1).match(reg); //获取url中"?"符后的字符串并正则匹配
+			  var context = ""; 
+			  if (r != null) 
+				 context = r[2]; 
+			  reg = null; 
+			  r = null; 
+			  return context == null || context == "" || context == "undefined" ? "" : context; 
+			}
+			
+			function getNewsList(typeID,pIndex,pSize){
+				$.get("https://customer.imotstudio.net/YLNewsInfo/ReadNewsList",{NewsTypeID:typeID,pageIndex:pIndex,pageSize:pSize}).done(function(res){
 					if(res.Code==200){
 						$("#list_body").empty();
-						if(res.Data.length>0){
-							res.Data.forEach(function(o,i){
-								var orderNum=i+1;
+						total_news=res.Data.TotalCount;
+						console.log(total_news);
+						total_page= total_news % page_size>0?Math.floor(total_news/page_size)+1:total_news/page_size;
+						console.log(total_page);
+						//删除情景，如果删除后一页为空，则自动跳转到前一页，第一页除外
+						if(pIndex>total_page){
+							pIndex-=1;
+							getNewsList(typeID,pIndex,pSize);
+						}
+						//计算总页数，根据页容量和总记录数
+						
+						$("#total_count").text(total_news);
+						//设置分页
+						$("#pagination").whjPaging("setPage", {currPage: pIndex, totalPage: total_page, totalSize: total_news});
+						var _news=res.Data.news;
+						if(_news.length>0){
+							console.log(_news);
+							_news.forEach(function(o,i){
+								var orderNum=pIndex==1?0*page_size+i+1:(pIndex-1)*page_size+i+1;
 								var poster=o.PosterIMG;
-								var typeName=o.NewsType;
+								var typeName=o.newTypeName;
 								var title=o.Title;
 								var author=o.Author;
-								var pubTime=o.AddTime;
+								var pubTime= formatTime(o.AddTime);
 								var state=0;
+								var viewNum=o.ReadNum;
 								var tempItemStr=`<tr>
-									  <th scope="row">${orderNum}</th>
-									  <td>
-										 <img src="${poster}" alt="">
-									  </td>
-									  <td>${title}</td>
-									  <td>${typeName}</td>
-									  <td>${author}</td>
-									  <td>${pubTime}</td>
-									  <td>${state}</td>
-									  <td class="op">
-										<button class="btn btn-small btn-danger">删除</button>
-										<button class="btn btn-small btn-warning">下线</button>
-										<button class="btn btn-small btn-primary">编辑</button>
-									  </td>
-								 </tr>`;
-								$("#list_body").append(tempItemStr);
-							})
+													  <td style="font-weight:bold;">${orderNum}</td>
+													  <td>
+														 <img src="${poster}" alt="">
+													  </td>
+													  <td>${title}</td>
+													  <td>${typeName}</td>
+													  <td>${author}</td>
+													  <td>${pubTime}</td>
+													  <td style="text-align: center"s>${viewNum}</td>
+													  <td class="op">
+														<button class="d-block btn btn-small btn-info" onclick="preview(${o.ID})">预览</button>
+														<button class="btn btn-small btn-danger" onclick="delNews(${o.ID})">删除</button>
+														<button class="btn btn-small btn-primary">编辑</button>
+													  </td>
+												 </tr>`;
+								$("#list_body").append(tempItemStr);		
+							});
 						}else{
 							$("#list_body").append('<tr><td colspan="3">还没有相关新闻</td></tr>');
 						}
@@ -49,15 +111,72 @@
 					}
 				})
 			}
+			
+			//格式化时间
+			function formatTime(theTime){
+				var f=theTime.replace('T',' ');
+				f=f.substring(0,f.lastIndexOf('.'));
+				return f;
+			}
+			
+			//获取新闻类型
+			function getNewsType(){
+				$.ajax('https://customer.imotstudio.net/YLNewsInfo/ReadNewsType',{
+					method:'get',
+					cache:false,
+					beforeSend:function(){
+						$("#type_list").text('正在获取新闻分类...');
+					},
+					success:function(res){
+						if(res.Code==200){
+							if(res.Data.length>0){
+								$("#type_list").empty();
+								$("#type_list").append('<a id="t0" href="news_list.html?newstype=0" class="btn btn-primary btn-sm mr-3">全部</a>');
+								$.each(res.Data,function(i,o){
+									$("#type_list").append('<a id="t'+o.ID+'" href="news_list.html?newstype='+o.ID+'" class="btn btn-outline-primary btn-sm mr-3">'+o.TypeName+'</a>');
+								});
+								$("#type_list > a").removeClass('btn-outline-primary btn-primary').addClass('btn-outline-primary');
+								$("#t"+type_id).removeClass('btn-outline-primary').addClass('btn-primary');
+							}else{
+								$("#type_list").text('您还没有新闻分类，请添加');
+							}
+						}else{
+							alert(res.Message);
+						}
+					}	
+				});	
+			}
+			
+			//删除一条新闻
+			function delNews(newsID){
+				if(confirm("确定要删除这条新闻吗？")){
+					$.ajax('https://customer.imotstudio.net/YLNewsInfo/DeleteNews',{
+						method:'delete',
+						data:{ID:newsID},
+						success:function(res){
+							if(res.Code==200){
+								alert("删除成功！");
+								getNewsList(type_id,page_index,page_size);
+							}else{
+								alert(res.Message);
+							}
+						},
+						error:function(){
+							alert("出错了！");
+						}
+					})
+				}
+			}
+			
+			function preview(nid){
+				window.open("pc_previwe.html?id="+nid);     
+			}
+
+			
 		
 		</script>
-		
-		
-		
+
 		<style>
-			
-			
-			
 			#wrap,#list{
 				width: 1200px;
 				margin: 50px auto 0;
@@ -67,6 +186,7 @@
 				display: block;
 				width: 80px;
 				height: auto;
+				
 			}
 			
 			#list tbody{
@@ -92,6 +212,21 @@
 			.op{
 				display: flex;
 				justify-content: space-between;
+				
+			}
+			
+			.op button{
+				margin-top: 10px;
+			}
+			
+			#bottom{
+			    height: 100px;
+				text-align: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				border-top: 1px solid #ccc;
+				margin-top: 100px;
 			}
 			
 		</style>
@@ -107,7 +242,7 @@
 		<hr/>	
 		<div id="list">
 			
-			<div class="d-flex align-items-center pb-4">
+			<div id="type_list" class="d-flex align-items-center pb-4">
 				<a href="#" class="btn btn-primary btn-sm mr-3">全部</a>
 				<a href="#" class="btn btn-outline-primary btn-sm mr-3">分类一</a>
 				<a href="#" class="btn btn-outline-primary btn-sm">分类二</a>
@@ -115,16 +250,16 @@
 			
 			
 			<table class="table table-hover">
-		      <caption>共有&nbsp;1&nbsp;条新闻</caption>
+		      <caption>共有<span id="total_count" style="padding: 0 3px;">0</span>条新闻</caption>
 			  <thead class="thead-light">
 				<tr>
 				  <th style="width: 40px;">#</th>
-				  <th style="width: 10px;">封面图</th>
-				  <th style="width: 400px;">新闻标题</th>
+				  <th style="width: 110px;">封面图</th>
+				  <th style="width: 380px;">新闻标题</th>
 				  <th style="width: 110px;">新闻分类</th>
 				  <th style="width: 120px;">作者</th>
-				  <th style="width: 120px;">发布时间</th>
-				  <th style="width: 100px;">状态</th>
+				  <th style="width: 160px;">发布时间</th>
+				  <th style="width: 100px; text-align: center">浏览量</th>
 				  <th>操作</th>
 				</tr>
 			  </thead>
@@ -135,7 +270,10 @@
 		
 		</div>
 		
+		<div id="pagination"></div>
 		
-		
+		<footer id="bottom">
+			<span>上海光本文化传媒有限责任公司提供技术支持@2020</span>
+		</footer>
 	</body>
 </html>
