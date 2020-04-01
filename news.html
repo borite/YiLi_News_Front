@@ -14,26 +14,37 @@
 			$(function(){
 				tid=GetQueryString('typeid');
 				nid=GetQueryString('nid');
-				nextid=GetQueryString('next');
-				next_tit=GetQueryString('ntit');
-				console.log(tid,nid);
+				
+				$.get('https://customer.imotstudio.net/YLNewsInfo/GetNextNews',{nid:nid,typeid:tid}).done(function(res){
+					if(res.Code==200){
+						$("#next_title").text(res.Message);
+						$("#btn_next").one('click',function(e){
+							e.preventDefault();
+							e.stopPropagation();				
+							location.replace('news.html?typeid='+tid+'&nid='+res.Data);
+						});
+					}else{
+						$("#next_title").text(res.Message);
+					}
+				});
+				
+				
 				if(tid==0||nid==0){
 					alert('参数错误');
 				}else{
-					console.log("aa");
-					console.log(decodeURIComponent(next_tit));
-					$("#next_title").text(decodeURIComponent(next_tit));
-					$("#h_back,#btn_back").on('touchend',function(e){
+					$("#h_back,#btn_back").on('click',function(e){
 						e.preventDefault();
 						e.stopPropagation();
 						location.replace('index.html?t='+tid);
 					});
-					$("#btn_next").on('touchend',function(e){
-						e.preventDefault();
-						e.stopPropagation();				
-						location.replace('news.html?typeid='+tid+'&nid='+nid+'&next='+nextid+'&ntit='+next_tit);
-					});
-					getNewsDetails(nid);
+					
+					$.ajax("https://customer.imotstudio.net/YLNewsInfo/AddViewNum?ID="+nid,{
+						method:'PUT'
+					}).done(function(res){
+						getNewsDetails(nid);
+					})
+					
+					
 				}
 			});
 			

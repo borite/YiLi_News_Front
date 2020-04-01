@@ -4,9 +4,9 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<script src="js/jquery-3.3.1.min.js"></script>
-		<link href="css/common.css" rel="stylesheet" />
+		<link href="css/common.css?v=1" rel="stylesheet" />
 		<link rel="stylesheet" href="css/bootstrap.min.css">
-		<title>这里是新闻标题</title>
+		<title>伊淇创新</title>
 		<script>
 			
 			var typeid=0;
@@ -31,7 +31,7 @@
 					let next=$(this).next().data('nid');
 					let nexttit=$(this).next().find('.news-title').text();
 					nexttit=encodeURIComponent(nexttit);
-					location.replace('news.html?typeid='+typeid+'&nid='+newid+'&next='+next+'&ntit='+nexttit);
+					location.replace('news.html?typeid='+typeid+'&nid='+newid);
 				})
 			});
 			
@@ -71,17 +71,20 @@
 							let typeName=_news[0].newTypeName;
 							$("#top_bar").text(typeName);
 							_news.forEach((o,i)=>{
+								console.log(o);
 								let title=o.Title;
 								let author=o.Author;
 								let viewnum=o.ReadNum;
 								let poster=o.PosterIMG;
 								let nid=o.ID;
+								let ptime=o.AddTime;
 								let htmlStr=`<a class="list-item" data-nid=${nid}>
 										  <div class="news-info">
 											<h3 class="news-title">${title}</h3>
 											<div class="footer">
 												<span>来源：${author}</span>
-												<span style="padding-left: 1rem;">浏览量：${viewnum}</span>
+												<span>时间：${formatTime(ptime)}</span>
+												<span>浏览量：${viewnum}</span>
 											</div>
 										  </div>
 										  <img class="news-pic" src="${poster}" />
@@ -100,13 +103,30 @@
 				getNewsList(typeid,page_index,page_size,false);
 			}
 			
+			//格式化时间
+			function formatTime(theTime){
+				var f=theTime.replace('T',' ');
+				f=f.substring(0,f.lastIndexOf('.'));
+				return f;
+			}
+			
 		</script>
 	</head>
 
 	<body>	
 		<header id="top_bar"></header>
 		<div id="news_list">	
-			
+			<a class="list-item">
+				 <div class="news-info">
+					 <h3 class="news-title">${title}</h3>
+					 <div class="footer">
+						<span>来源：${author}</span>
+						<span>时间：2020-2-12</span>
+						<span>浏览量：42</span>
+					 </div>
+				</div>
+				<img class="news-pic" src="images/demo.jfif" />
+			</a>
 		</div>
 		
 		<button id="btn_load_news" class="btn btn-primary" onClick="addMoreNews()">加载更多新闻</button>

@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>添加新闻</title>
+		<title>编辑新闻</title>
 		<link rel="stylesheet" href="css/bootstrap.min.css" />
 		<link rel="stylesheet" href="css/backsystem.css"/>
 		<link rel="stylesheet" href="css/cropper.min.css" />
@@ -10,8 +10,16 @@
 		<script src="js/jquery.poplayer.js"></script>
 		<script src="js/cropper.min.js"></script>
 		<script>
+			var nid;
 			$(function(){
-				getNewsType();			
+				nid=GetQueryString('t');
+				if(nid==""){
+					alert("参数错误,无法获取新闻信息");				
+				    //location.replace('news_list.html');
+					//return false;
+				}
+				getNewsType();		
+				
 				$("#type_list").on('click','a.type',function(){
 					$("#type_list a.type").removeClass('active');
 					$(this).addClass('active');
@@ -24,7 +32,6 @@
 					e.stopPropagation();
 					if(confirm('删除后，该分类下的所有新闻将被删除且不可恢复，确认删除吗？')){
 						var id=$(this).data('tid');
-						
 						$.ajax("https://customer.imotstudio.net/YLNewsInfo/DeleteNewsType?typeID="+id,{
 							type:'delete',
 							success:function(res){
@@ -37,8 +44,10 @@
 						})
 					
 					}
-				})
+				});	
+
 			});
+	
 		</script>
 		<style>
 			#wrap{
@@ -236,6 +245,7 @@
 		<script src="editor/wangEditor.js"></script>
 		<script src="js/ossUploadHelper.js"></script>
 		<script>
+			
 			var E = window.wangEditor
 			var editor = new E('#toolbar','#editor');
 			
@@ -280,6 +290,9 @@
 				}	
 			}
 			editor.create();
+			
+			
+			
 			
 			$("#btn_add_poster").click(function(){
 				$("#news_poster").click();
@@ -374,37 +387,66 @@
 				if(checkForm()){
 						$("#btn_post_news").prop('disabled',true).text('请稍后..');
 						var ImgInfoStr=$("#news_poster_val").val();
-						var allImgs=[];
-						var extName=ImgInfoStr.substr(11,3);
-						var imginfo={baseURL:ImgInfoStr,ext:extName};
-						allImgs.push(imginfo);
-						$.post('https://customer.imotstudio.net/YLNewsInfo/UpLoadImgBase64',{"imgs":allImgs}).then(function(res){
-							console.log(res);
-							$("#news_poster_val").val(res.Data);
-							var newsPara={
-							  "NewsType": $("#news_type_val").val(),
-							  "Title": $("#news_title").val(),
-							  "PosterIMG": $("#news_poster_val").val(),
-							  "Author": $("#news_author").val(),
-							  "NewsContent": editor.txt.html(),
-							  "NewsText":editor.txt.text()
-							}
-							return $.post("https://customer.imotstudio.net/YLNewsInfo/CreatNews",newsPara);
-						}).done(function(res){
-							if(res.Code==200){
+						if(ImgInfoStr.indexOf('https://')>-1){
+							var editPara={
+								  "NewsType": $("#news_type_val").val(),
+								  "Title": $("#news_title").val(),
+								  "PosterIMG": $("#news_poster_val").val(),
+								  "Author": $("#news_author").val(),
+								  "NewsContent": editor.txt.html(),
+								  "ID":nid
+								}
+							console.log(editPara);
+							$.ajax("https://customer.imotstudio.net/YLNewsInfo/updatenews",{
+								method:'PUT',
+								data:editPara,
+								success:function(res){
+									if(res.Data==200){
+										alert("新闻编辑成功");
+									}else{
+										alert(res.Message);
+									}
+								},
+								complete:function(){
+									$("#btn_post_news").prop('disabled',false).text('提交');
+									location.replace('news_list.html');
+								}
+							})
+						}else{
+							var allImgs=[];
+							var extName=ImgInfoStr.substr(11,3);
+							var imginfo={baseURL:ImgInfoStr,ext:extName};
+							allImgs.push(imginfo);
+							$.post('https://customer.imotstudio.net/YLNewsInfo/UpLoadImgBase64',{"imgs":allImgs}).then(function(res){
+								console.log(res);
+								$("#news_poster_val").val(res.Data);
+								var newsPara={
+								  "NewsType": $("#news_type_val").val(),
+								  "Title": $("#news_title").val(),
+								  "PosterIMG": $("#news_poster_val").val(),
+								  "Author": $("#news_author").val(),
+								  "NewsContent": editor.txt.html(),
+								  "ID":nid
+								}
+								return $.ajax("https://customer.imotstudio.net/YLNewsInfo/updatenews",{
+									method:'put',
+									data:newsPara
+								});
+							}).done(function(res){
+								if(res.Code==200){
+									$("#btn_post_news").prop('disabled',false).text('提交');
+									alert("编辑成功！");
+									location.replace('news_list.html');
+								}else{
+									alert(res.Message);
+								}
+							}).always(function(){
 								$("#btn_post_news").prop('disabled',false).text('提交');
-								alert("发布新闻成功！");
-								location.replace('news_list.html');
-							}else{
-								alert(res.Message);
-							}
-						}).always(function(){
-							$("#btn_post_news").prop('disabled',false).text('提交');
-						});
+							});
+						}
 				}			
 				
 			});
-			
 			
 			
 			function initCropper(){
@@ -434,6 +476,7 @@
 					$("#news_title").focus();
 					return false;
 				}
+
 				
 				if(author==""||author.length<2){
 					alert("请填写正确的新闻作者");
@@ -479,6 +522,8 @@
 																 <code style="font-size: 14px; color: rgba(0,129,181,1.00);">https://customer.imotstudio.net/yili/ylnews_release/index.html?t='+o.ID+'</code>\
 															 </div>');
 								});
+								//为了可以正确显示选中的类型，在类型绑定完成后调用新闻绑定
+								bindNewsInfo(nid);
 							}else{
 								$("#type_list").text('您还没有新闻分类，请添加');
 							}
@@ -488,7 +533,37 @@
 					}	
 				});	
 			}
-	
+		
+			//获取URL中指定的参数值
+			function GetQueryString(name) { 
+			  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+			  var r = window.location.search.substr(1).match(reg); //获取url中"?"符后的字符串并正则匹配
+			  var context = ""; 
+			  if (r != null) 
+				 context = r[2]; 
+			  reg = null; 
+			  r = null; 
+			  return context == null || context == "" || context == "undefined" ? "" : context; 
+			}
+			
+			function bindNewsInfo(newsID){
+				console.log(newsID);
+				$.get('https://customer.imotstudio.net/YLNewsInfo/ReadNewsInfo?ID='+newsID).done(function(res){
+					if(res.Code==200){
+						$("#news_title").val(res.Data.Title);
+						$("#news_author").val(res.Data.Author);
+						$("#t"+res.Data.NewsType).click();
+						$("#btn_add_poster").attr('src',res.Data.PosterIMG);
+						editor.txt.html(res.Data.NewsContent);
+						$("#news_poster_val").val(res.Data.PosterIMG);
+						$("#news_content_val").val(res.Data.NewsContent);
+						$("#news_type_val").val(res.Data.NewsType)
+					}else{
+						alert(res.Message);
+					}
+				});
+			}
+			
 		</script>
 	</body>
 </html>

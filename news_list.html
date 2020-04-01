@@ -98,7 +98,7 @@
 													  <td class="op">
 														<button class="d-block btn btn-small btn-info" onclick="preview(${o.ID})">预览</button>
 														<button class="btn btn-small btn-danger" onclick="delNews(${o.ID})">删除</button>
-														<button class="btn btn-small btn-primary">编辑</button>
+														<button class="btn btn-small btn-primary" onclick="modiNews(${o.ID})">编辑</button>
 													  </td>
 												 </tr>`;
 								$("#list_body").append(tempItemStr);		
@@ -171,7 +171,10 @@
 			function preview(nid){
 				window.open("pc_previwe.html?id="+nid);     
 			}
-
+			
+			function modiNews(nid){
+				window.open("edit_news.html?t="+nid)
+			}
 			
 		
 		</script>
