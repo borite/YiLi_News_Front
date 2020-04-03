@@ -132,6 +132,10 @@
 				border-top: 1px solid #ccc;
 				margin-top: 100px;
 			}
+
+			blockquote{
+				background-color: transparent !important;
+			}
 		</style>
 	</head>
 
@@ -180,7 +184,7 @@
 				 <label>新闻内容</label>
 				 <div id="toolbar" class="toolbar"></div>
 				 <div style="padding: 8px 0; color: #ccc; font-size: 14px;">
-				 	新闻内容中，图片每张不得超过3MB
+				 	新闻内容中，图片每张不得超过3MB,请不要对图片进行缩进，以免导致图片宽度大于整体编辑器宽度
 				 </div>
 				 <div id="editor" class="text"></div>
 				 <input id="news_content_val" type="hidden" value="-1">
@@ -239,6 +243,8 @@
 			var E = window.wangEditor
 			var editor = new E('#toolbar','#editor');
 			
+			editor.customConfig.menus = ['head', 'bold', 'fontSize', 'fontName', 'italic','indent','outdent','underline', 'strikeThrough', 'foreColor', 'backColor', 'link', 'list', 'justify', 'quote', 'emoticon', 'image', 'table', 'video', 'undo', 'redo']
+
 			editor.customConfig.onchange = function (html) {
 				if(html!="<p><br></p>"){
 					$("#news_content_val").val("0");

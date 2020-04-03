@@ -248,7 +248,7 @@
 			
 			var E = window.wangEditor
 			var editor = new E('#toolbar','#editor');
-			
+			editor.customConfig.menus = ['head', 'bold', 'fontSize', 'fontName', 'italic','indent','outdent','underline', 'strikeThrough', 'foreColor', 'backColor', 'link', 'list', 'justify', 'quote', 'emoticon', 'image', 'table', 'video', 'undo', 'redo'];
 			editor.customConfig.onchange = function (html) {
 				if(html!="<p><br></p>"){
 					$("#news_content_val").val("0");
