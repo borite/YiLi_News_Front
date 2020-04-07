@@ -41,6 +41,7 @@
 			});
 		</script>
 		<style>
+
 			#wrap{
 				width: 1200px;
 				margin: 50px auto 25px;
@@ -243,7 +244,7 @@
 			var E = window.wangEditor
 			var editor = new E('#toolbar','#editor');
 			
-			editor.customConfig.menus = ['head', 'bold', 'fontSize', 'fontName', 'italic','indent','outdent','underline', 'strikeThrough', 'foreColor', 'backColor', 'link', 'list', 'justify', 'quote', 'emoticon', 'image', 'table', 'video', 'undo', 'redo']
+			editor.customConfig.menus = ['head', 'bold', 'fontSize', 'fontName', 'italic','indent','outdent','linespace','underline', 'strikeThrough', 'foreColor', 'backColor', 'link', 'list', 'justify', 'quote', 'image', 'table', 'video', 'undo', 'redo']
 
 			editor.customConfig.onchange = function (html) {
 				if(html!="<p><br></p>"){
